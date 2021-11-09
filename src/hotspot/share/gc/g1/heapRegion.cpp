@@ -107,7 +107,9 @@ void HeapRegion::handle_evacuation_failure() {
 }
 
 void HeapRegion::iterate_evac_failure_objs(ObjectClosure* closure) {
+  _evac_failure_objs.pre_iterate();
   _evac_failure_objs.iterate(closure);
+  _evac_failure_objs.post_iterate();
 }
 
 void HeapRegion::unlink_from_list() {
