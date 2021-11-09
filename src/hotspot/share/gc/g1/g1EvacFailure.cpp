@@ -165,7 +165,7 @@ public:
                                         during_concurrent_start,
                                         _worker_id);
     // Iterates evac failure objs which are recorded during evacuation.
-    hr->iterate_evac_failure_objs(&rspc);
+    hr->handle_evac_failure_objs_iteration(&rspc);
     // Need to zap the remainder area of the processed region.
     rspc.zap_remainder();
 

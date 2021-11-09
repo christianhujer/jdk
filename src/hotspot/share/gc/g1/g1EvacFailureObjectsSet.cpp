@@ -55,6 +55,20 @@ G1EvacFailureObjectsSet::OffsetInRegion G1EvacFailureObjectsSet::to_offset(oop o
   return static_cast<OffsetInRegion>(offset);
 }
 
+void G1EvacFailureObjectsSet::pre_iteration() {
+  _helper.pre_iteration();
+}
+
+void G1EvacFailureObjectsSet::iterate(ObjectClosure* closure) const {
+  assert_at_safepoint();
+  _helper.iterate(closure);
+}
+
+void G1EvacFailureObjectsSet::post_iteration() {
+  _helper.post_iteration();
+  _offsets.drop_all();
+}
+
 G1EvacFailureObjectsSet::G1EvacFailureObjectsSet(uint region_idx, HeapWord* bottom) :
   DEBUG_ONLY(_region_idx(region_idx) COMMA)
   _bottom(bottom),
@@ -70,18 +84,10 @@ void G1EvacFailureObjectsSet::record(oop obj) {
   *e = to_offset(obj);
 }
 
-void G1EvacFailureObjectsSet::pre_iterate() {
-  _helper.pre_iterate();
-}
-
-void G1EvacFailureObjectsSet::iterate(ObjectClosure* closure) const {
-  assert_at_safepoint();
-  _helper.iterate(closure);
-}
-
-void G1EvacFailureObjectsSet::post_iterate() {
-  _helper.post_iterate();
-  _offsets.drop_all();
+void G1EvacFailureObjectsSet::handle_iteration(ObjectClosure* closure) {
+  pre_iteration();
+  iterate(closure);
+  post_iteration();
 }
 
 int G1EvacFailureObjectsSet::G1EvacFailureObjectsIterationHelper::order_oop(OffsetInRegion a, OffsetInRegion b) {
@@ -108,7 +114,7 @@ G1EvacFailureObjectsSet::G1EvacFailureObjectsIterationHelper::G1EvacFailureObjec
   _array_length(0),
   _num_allocated_nodes(0) { }
 
-void G1EvacFailureObjectsSet::G1EvacFailureObjectsIterationHelper::pre_iterate() {
+void G1EvacFailureObjectsSet::G1EvacFailureObjectsIterationHelper::pre_iteration() {
   assert(_offset_array == nullptr, "must be");
   assert(_array_length == 0, "must be");
   _num_allocated_nodes = _segments->num_allocated_nodes();
@@ -123,7 +129,7 @@ void G1EvacFailureObjectsSet::G1EvacFailureObjectsIterationHelper::iterate(Objec
   iterate_internal(closure);
 }
 
-void G1EvacFailureObjectsSet::G1EvacFailureObjectsIterationHelper::post_iterate() {
+void G1EvacFailureObjectsSet::G1EvacFailureObjectsIterationHelper::post_iteration() {
   assert(_offset_array != nullptr, "must be");
   assert(_array_length != 0, "must be");
   FREE_C_HEAP_ARRAY(OffsetInRegion, _offset_array);

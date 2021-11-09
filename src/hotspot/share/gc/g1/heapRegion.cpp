@@ -106,10 +106,8 @@ void HeapRegion::handle_evacuation_failure() {
   _next_marked_bytes = 0;
 }
 
-void HeapRegion::iterate_evac_failure_objs(ObjectClosure* closure) {
-  _evac_failure_objs.pre_iterate();
-  _evac_failure_objs.iterate(closure);
-  _evac_failure_objs.post_iterate();
+void HeapRegion::handle_evac_failure_objs_iteration(ObjectClosure* closure) {
+  _evac_failure_objs.handle_iteration(closure);
 }
 
 void HeapRegion::unlink_from_list() {

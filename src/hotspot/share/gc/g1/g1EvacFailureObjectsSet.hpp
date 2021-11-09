@@ -62,9 +62,9 @@ private:
   public:
     G1EvacFailureObjectsIterationHelper(G1EvacFailureObjectsSet* collector);
 
-    void pre_iterate();
+    void pre_iteration();
     void iterate(ObjectClosure* closure) const;
-    void post_iterate();
+    void post_iteration();
 
     // Callback of G1SegmentedArray::iterate_nodes
     void do_buffer(G1SegmentedArrayBuffer<mtGC>* node, uint length);
@@ -94,17 +94,19 @@ private:
   oop from_offset(OffsetInRegion offset) const;
   OffsetInRegion to_offset(oop obj) const;
 
+  void pre_iteration();
+  // Apply the given ObjectClosure to all objects that failed evacuation. Objects
+  // are passed in increasing address order.
+  void iterate(ObjectClosure* closure) const;
+  void post_iteration();
+
 public:
   G1EvacFailureObjectsSet(uint region_idx, HeapWord* bottom);
 
   // Record an object that failed evacuation.
   void record(oop obj);
 
-  void pre_iterate();
-  // Apply the given ObjectClosure to all objects that failed evacuation. Objects
-  // are passed in increasing address order.
-  void iterate(ObjectClosure* closure) const;
-  void post_iterate();
+  void handle_iteration(ObjectClosure* closure);
 };
 
 #endif //SHARE_GC_G1_G1EVACUATIONFAILUREOBJSINHR_HPP
